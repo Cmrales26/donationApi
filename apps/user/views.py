@@ -25,6 +25,15 @@ class UserViewSet(viewsets.ModelViewSet):
             return UserCreateSerializer
         return UserSerializer
 
+    def get_queryset(self):
+        group_id = self.request.query_params.get("user_grup")
+        query = self.queryset
+
+        if group_id:
+            query = query.filter(groups__id=group_id)
+
+        return query
+
 
 class TokenObtainPairView(TokenObtainPairView):
     serializer_class = TokenObtainPairSerializer
