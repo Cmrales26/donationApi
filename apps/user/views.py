@@ -1,6 +1,11 @@
 from apps.user.models import User
 from rest_framework import viewsets, permissions
-from apps.user.serializer import UserSerializer, UserCreateSerializer
+from apps.user.serializer import (
+    TokenObtainPairSerializer,
+    UserSerializer,
+    UserCreateSerializer,
+)
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -9,9 +14,17 @@ class UserViewSet(viewsets.ModelViewSet):
     """
 
     queryset = User.objects.all()
-    permission_classes = [permissions.AllowAny]
+
+    def get_permissions(self):
+        if self.action == "list":
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
 
     def get_serializer_class(self):
         if self.action == "create":
             return UserCreateSerializer
         return UserSerializer
+
+
+class TokenObtainPairView(TokenObtainPairView):
+    serializer_class = TokenObtainPairSerializer
