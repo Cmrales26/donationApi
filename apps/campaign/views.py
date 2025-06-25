@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from apps.campaign.models import Campaign
 from apps.campaign.serializer import CampaignSerializer
-from apps.campaign.utils.permission import havePermission, IsAdminOrOwner
+from utils.permission import havePermission
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
@@ -10,13 +10,7 @@ from rest_framework.decorators import action
 class CampaignView(viewsets.ModelViewSet):
     queryset = Campaign.objects.all()
     serializer_class = CampaignSerializer
-
-    def get_permissions(self):
-        if self.action == "create":
-            permission_classes = [havePermission]
-        else:
-            permission_classes = [IsAdminOrOwner]
-        return [permission() for permission in permission_classes]
+    permission_classes = [havePermission]
 
     def get_queryset(self):
         user = self.request.user
@@ -26,23 +20,17 @@ class CampaignView(viewsets.ModelViewSet):
         else:
             return Campaign.objects.filter(user=user)
 
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-
     @action(detail=True, methods=["patch"], url_path="update-status")
     def update_status(self, request, pk=None):
         campaign = get_object_or_404(Campaign, pk=pk)
 
         is_admin = request.user.groups.filter(id=1).exists()
-        is_owner = request.user == campaign.user
 
         ""
         " Verificar si el usuario tiene permiso para modificar la campaña"
-        if not (is_owner or is_admin):
+        if not (is_admin):
             return Response(
-                {"detail": "No tienes permiso para modificar esta campaña."},
+                {"detail": "No access to modify this campaign."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -52,7 +40,7 @@ class CampaignView(viewsets.ModelViewSet):
         new_status = request.data.get("status")
         if not new_status:
             return Response(
-                {"status": "Este campo es requerido."},
+                {"status": "this field is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -75,6 +63,6 @@ class CampaignView(viewsets.ModelViewSet):
         campaign.save()
 
         return Response(
-            {"status": "Estado actualizado correctamente.", "new_status": new_status},
+            {"status": "status change successfully", "new_status": new_status},
             status=status.HTTP_200_OK,
         )
