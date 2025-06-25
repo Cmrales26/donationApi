@@ -43,7 +43,7 @@ urlpatterns = [
     path("api-auth/", include("rest_framework.urls")),
     path("api/", include("apps.user.routes.urls")),
     path("api/", include("apps.campaign.routes.urls")),
-    path("api/", include("apps.tasks.urls")),
+    path("api/", include("apps.tasks.routes.urls")),
     re_path(
         r"^swagger(?P<format>\.json|\.yaml)$",
         schema_view.without_ui(cache_timeout=0),

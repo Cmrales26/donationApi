@@ -1,7 +1,7 @@
 from apps.campaign.models import Campaign
 from rest_framework import serializers
 from apps.user.models import User
-from apps.tasks.serializer import TaskSerializer
+from apps.tasks.serializers.TaskSerializer import TaskSerializer
 from apps.campaign.services.CampaignServices import create_campaign
 
 
