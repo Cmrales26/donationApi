@@ -1,7 +1,8 @@
 from apps.campaign.models import Campaign
 from rest_framework import serializers
-from apps.user.serializer import UserSerializer
+from apps.user.models import User
 from apps.tasks.serializer import TaskSerializer
+from services.email_service import send_email
 
 
 class CampaignSerializer(serializers.ModelSerializer):
@@ -38,8 +39,28 @@ class CampaignSerializer(serializers.ModelSerializer):
             user = validated_data.get("user")
             if user and user.groups.filter(id=1).exists():
                 raise serializers.ValidationError(
-                    "Users in group 1 (Admons) cannot be assigned to a campaign."
+                    "Users in group 1 (Admins) cannot be assigned to a campaign."
                 )
+
+            taskUser = User.objects.get(username=user)
+
+            if not taskUser:
+                raise serializers.ValidationError("User does not exist.")
+
+            email_success = send_email(
+                subject="Campaign Created",
+                message=f"Hello {taskUser.first_name},\n\nYour campaign has been successfully created.",
+                recipient_list=[taskUser.email],
+            )
+
+            if not email_success:
+                raise serializers.ValidationError(
+                    "Failed to send email notification to the user."
+                )
+
+            # user who created the campaign
+            created_by = self.context.get("request").user
+            validated_data["create_by"] = created_by
 
             campaign = Campaign.objects.create(**validated_data)
             return campaign

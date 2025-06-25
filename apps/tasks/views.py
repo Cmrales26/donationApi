@@ -1,10 +1,12 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from apps.tasks.models import Task
+from apps.campaign.models import Campaign
 from apps.tasks.serializer import TaskSerializer, TaskUpdateSerializer
 from utils.permission import havePermission, IsAdminOrOwner
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from services.email_service import send_email
 
 
 # Create your views here.
@@ -75,6 +77,26 @@ class TaskViewSet(viewsets.ModelViewSet):
                 {"status": "Cannot change status from completed to another state."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        campaign = Campaign.objects.get(id=task.campaign_id)
+        admin_id = campaign.create_by_id
+        admin_email = campaign.create_by.email
+
+        email_success = send_email(
+            subject="Task Status Update",
+            message=f"Hello Admin,\n\nThe status of the task '{task.title}' has been updated to '{new_status}'.",
+            recipient_list=[admin_email],
+        )
+
+        if not email_success:
+            return Response(
+                {"detail": "Failed to send email notification."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        ""
+        " Actualizar el estado de la tarea"
+        ""
 
         task.status = new_status
         task.save()
