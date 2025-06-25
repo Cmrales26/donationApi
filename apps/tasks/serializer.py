@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from apps.user.serializer import UserSerializer
 from apps.tasks.models import Task
 from apps.campaign.models import Campaign
 
