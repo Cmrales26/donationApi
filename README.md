@@ -26,6 +26,10 @@ Este `README.md` te proporciona los comandos esenciales para poner en marcha y g
 
 ### 2. Migraciones y Ejecución
 
+**Realizar las migraciones a la base de datos:**
+
+`python manage.py makemigrations`
+
 **Aplicar migraciones a la base de datos:**
 
 `python manage.py migrate`
@@ -34,9 +38,25 @@ Este `README.md` te proporciona los comandos esenciales para poner en marcha y g
 
 `python manage.py runserver`
 
+# 🌱 Semilla de usuario
+
+**Generar una semilla de usuarios (Beneficiarios) en la base de datos**
+
+`python manage.py seed_users`
+
 # 🐳 Entorno Docker
 
+**Construir el contenedor de Docker**
+
+`docker-compose build`
+
+**Ejecutar el contenedor de Docker**
+
 `docker-compose up -d`
+
+**Ejecutar ambas al mismo tiempo**
+
+`docker-compose up --build -d`
 
 ### 2. Migraciones y Comandos
 
