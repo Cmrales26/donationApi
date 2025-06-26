@@ -22,8 +22,13 @@ class havePermission(BasePermission):
 
 class IsAdminOrOwner(BasePermission):
     def has_object_permission(self, request, view, obj):
+
         return (
             request.user
             and request.user.is_authenticated
-            and (request.user.groups.filter(id=1).exists() or obj.user == request.user)
+            and (
+                request.user.groups.filter(id=1).exists()
+                or getattr(obj, "user", None) == request.user
+                or getattr(obj, "beneficiary", None) == request.user
+            )
         )

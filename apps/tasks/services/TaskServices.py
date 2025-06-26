@@ -8,6 +8,7 @@ from apps.tasks.repositories.TaskRespository import (
 )
 from services.email_service import send_email
 from apps.tasks.models import Task
+from apps.user.models import User
 from apps.campaign.models import Campaign
 from rest_framework import serializers
 
@@ -43,6 +44,23 @@ def create_task_service(data: dict) -> Task:
 
     last_task = get_last_task_order(campaign)
     data["order"] = last_task + 1 if last_task else 1
+
+    try:
+        task_user = User.objects.get(username=data["beneficiary"].username)
+    except User.DoesNotExist:
+        raise serializers.ValidationError("User does not exist.")
+
+    # Send email notification to the user
+    email_success = send_email(
+        subject="Task Created",
+        message=f"Hello {task_user.first_name},\n\nYour task '{data.get('title')}' has been successfully created.",
+        recipient_list=[task_user.email],
+    )
+
+    if not email_success:
+        raise serializers.ValidationError(
+            "Failed to send email notification to the user."
+        )
 
     try:
         task = create_task(data)

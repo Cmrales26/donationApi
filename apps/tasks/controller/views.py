@@ -30,11 +30,21 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        campaign_id = self.request.query_params.get("campaign", None)
+        status = self.request.query_params.get("status", None)
 
         if user.groups.filter(id=1).exists():
-            return Task.objects.all()
+            queryset = Task.objects.all()
         else:
-            return Task.objects.filter(beneficiary=user)
+            queryset = Task.objects.filter(beneficiary=user)
+
+        if campaign_id:
+            queryset = queryset.filter(campaign_id=campaign_id)
+
+        if status:
+            queryset = queryset.filter(status=status)
+
+        return queryset
 
     @action(detail=True, methods=["patch"], url_path="update-status")
     def update_status(self, request, pk=None):

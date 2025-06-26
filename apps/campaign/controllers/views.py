@@ -15,11 +15,23 @@ class CampaignView(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        status_param = self.request.query_params.get("status", None)
+
+        valid_statuses = [choice[0] for choice in Campaign.STATUS_CHOICES]
 
         if user.groups.filter(id=1).exists():
-            return Campaign.objects.all()
+            queryset = Campaign.objects.all()
         else:
-            return Campaign.objects.filter(user=user)
+            queryset = Campaign.objects.filter(user=user)
+
+        if status_param:
+            if status_param not in valid_statuses:
+                raise serializers.ValidationError(
+                    f"Invalid status. Valid options are: {', '.join(valid_statuses)}"
+                )
+            queryset = queryset.filter(status=status_param)
+
+        return queryset
 
     @action(detail=True, methods=["patch"], url_path="update-status")
     def update_status(self, request, pk=None):
